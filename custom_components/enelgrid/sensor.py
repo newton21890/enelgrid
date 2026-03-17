@@ -217,7 +217,7 @@ class EnelGridConsumptionSensor(SensorEntity):
             "username": entry.data[CONF_USERNAME],
             "password": entry.data[CONF_PASSWORD],
             "pod": self._pod,
-            "numero_utente": entry.data[CONF_USER_NUMBER],
+            "user_number": entry.data[CONF_USER_NUMBER],
         }
         self._attr_name = "enelgrid Daily Import"
         self._state: str | None = None
