@@ -57,16 +57,19 @@ These credentials are stored securely in Home Assistant's `config_entries` stora
 
 ## Configurazione Energy Dashboard
 
-Dopo aver installato e configurato l'integrazione:
+L'integrazione crea:
+
+- **`sensor.enelgrid_{POD}_monthly_consumption`** — valore cumulativo mensile (per un colpo d'occhio)
+- **`sensor:enelgrid_{POD}_consumption`** — statistiche orarie importate per la Energy Dashboard (non è un sensore fisico, appare solo nel selettore entità)
+
+Per configurare la Energy Dashboard:
 
 1. Vai in **Settings → Energy**
 2. In **Grid consumption** clicca **Add consumption**
-3. Cerca e seleziona **`sensor.enelgrid_{POD}_monthly_consumption** (il sensore con device_class ENERGY e state_class total_increasing)
-4. In **Cost** puoi selezionare **`sensor:enelgrid_{POD}_kw_cost`** (importato come statistica esterna)
-5. Salva
+3. Cerca **`sensor:enelgrid_{POD}_consumption`** (o digita manualmente l'ID) — apparirà come "Enel {POD} Consumption"
+4. Selezionalo e salva
 
-I dati vengono aggiornati automaticamente una volta al giorno.  
-Enel fornisce i dati con **circa 3 giorni di ritardo**, quindi non aspettarti valori in tempo reale.
+**Nota importante:** Enel fornisce i dati con **circa 3 giorni di ritardo**. Il grafico del giorno corrente sarà sempre vuoto. Per vedere i dati, seleziona un intervallo di 2-3 giorni fa nel grafico della Energy Dashboard.
 
 ![Description of Image](assets/energy_config.jpg)
 
