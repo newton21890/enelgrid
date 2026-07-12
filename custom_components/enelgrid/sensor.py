@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from homeassistant.components.persistent_notification import async_create
 from homeassistant.components.recorder import get_instance
 from homeassistant.components.recorder.statistics import (
-    async_add_external_statistics,
+    async_import_statistics,
     clear_statistics,
     get_last_statistics,
     statistics_during_period,
@@ -220,6 +220,8 @@ class EnelGridConsumptionSensor(SensorEntity):
             "user_number": entry.data[CONF_USER_NUMBER],
         }
         self._attr_name = "enelgrid Daily Import"
+        self._attr_unique_id = f"{self._pod}_daily_import"
+        self.entity_id = f"sensor.enelgrid_{_normalize_pod(self._pod)}_daily_import"
         self._state: str | None = None
 
     @property
@@ -301,8 +303,8 @@ class EnelGridConsumptionSensor(SensorEntity):
         )
 
         try:
-            async_add_external_statistics(self.hass, metadata_kw, stats_kw)
-            async_add_external_statistics(self.hass, metadata_cost, stats_cost)
+            await async_import_statistics(self.hass, metadata_kw, stats_kw, mean_type="sum")
+            await async_import_statistics(self.hass, metadata_cost, stats_cost, mean_type="sum")
             _LOGGER.debug(
                 "[EnelGrid] Saved %d points — final sum: %.2f kWh",
                 len(stats_kw), final_cumulative,
@@ -392,6 +394,7 @@ class EnelGridMonthlySensor(SensorEntity):
         self._attr_device_class = SensorDeviceClass.ENERGY
         self._attr_state_class = "total_increasing"
         self._attr_native_unit_of_measurement = "kWh"
+        self._attr_unique_id = f"{_normalize_pod(pod)}_monthly_consumption"
         self._attr_extra_state_attributes = {"source": "enelgrid"}
         self._state: float = 0.0
 

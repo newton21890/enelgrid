@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from datetime import datetime, timedelta
 
@@ -120,18 +121,24 @@ class EnelGridSession:
             json_data = await response.json()
             await self.close()
 
-            # Save raw JSON for debugging
+            # Save raw JSON for debugging (offloaded to executor to avoid blocking)
             try:
                 import os
                 import json as json_module
+
                 debug_dir = "/config/enelgrid_debug"
-                os.makedirs(debug_dir, exist_ok=True)
                 filename = f"enel_raw_{validity_from}_{validity_to}.json"
-                with open(os.path.join(debug_dir, filename), "w") as f:
-                    json_module.dump(json_data, f, indent=2)
-                _LOGGER.info(f"[EnelGrid Debug] Saved raw JSON to {filename}")
+                filepath = os.path.join(debug_dir, filename)
+
+                def _save():
+                    os.makedirs(debug_dir, exist_ok=True)
+                    with open(filepath, "w") as f:
+                        json_module.dump(json_data, f, indent=2)
+
+                await asyncio.to_thread(_save)
+                _LOGGER.info("Saved raw JSON to %s", filename)
             except Exception as e:
-                _LOGGER.warning(f"[EnelGrid Debug] Failed to save JSON: {e}")
+                _LOGGER.warning("Failed to save debug JSON: %s", e)
 
             return json_data
 

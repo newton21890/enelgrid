@@ -1,6 +1,15 @@
-# Home Assistant - enelgrid Integration
+# Home Assistant - enelgrid Integration (Fork con correzioni)
 
-This custom integration for Home Assistant retrieves and imports **hourly and daily energy consumption data** from **Enel Italia**, making it available in Home Assistant's **Energy Dashboard**.
+Questo è un **fork** dell'integrazione [sathia-musso/enelgrid](https://github.com/sathia-musso/enelgrid) con correzioni di bug critici che impedivano il funzionamento corretto con le versioni recenti di Home Assistant.
+
+## ❗ Bug corretti rispetto all'originale
+
+| Bug | Sintomo | Fix |
+|-----|---------|-----|
+| **Mancanza di `unique_id`** nei sensori | *"Questa entità non ha un ID univoco, pertanto le sue impostazioni non possono essere gestite dall'interfaccia utente"* | Aggiunto `_attr_unique_id` a entrambi i sensori |
+| **Uso di API deprecata `async_add_external_statistics`** senza `mean_type` | Dati non importati nella Energy Dashboard (Home Assistant ≥2026.7) | Sostituito con `async_import_statistics` + parametro `mean_type="sum"` |
+| **Blocking `open()` dentro l'event loop** | Warning *"Detected blocking call to open inside the event loop"* | Offload della scrittura file con `asyncio.to_thread` |
+| **Entità sensore consumi non allineata** | Impossibile trovare il sensore nella Energy Dashboard | Aggiunto `entity_id` esplicito e `unique_id` basato sul POD |
 
 ## 📋 Features
 
@@ -28,14 +37,15 @@ This custom integration for Home Assistant retrieves and imports **hourly and da
 ### Installation via HACS (Recommended)
 
 1. In **HACS**, go to **Integrations**.
-2. Add this repository as a **Custom Repository** (if it's not already in HACS).
+2. Add this repository as a **Custom Repository**:  
+   `https://github.com/newton21890/enelgrid`
 3. Search for **"enelgrid"** and install.
 4. Restart Home Assistant.
 5. Follow the setup steps in **Settings → Devices & Services**.
 
 ## ⚙️ Configuration
 
-During setup, you’ll need to provide:
+During setup, you'll need to provide:
 
 - **Username** Your Enel account email
 - **Password**
@@ -45,7 +55,18 @@ During setup, you’ll need to provide:
 
 These credentials are stored securely in Home Assistant's `config_entries` storage.
 
-After this go to your Energy settings and configure the statistics like this:
+## Configurazione Energy Dashboard
+
+Dopo aver installato e configurato l'integrazione:
+
+1. Vai in **Settings → Energy**
+2. In **Grid consumption** clicca **Add consumption**
+3. Cerca e seleziona **`sensor.enelgrid_{POD}_monthly_consumption** (il sensore con device_class ENERGY e state_class total_increasing)
+4. In **Cost** puoi selezionare **`sensor:enelgrid_{POD}_kw_cost`** (importato come statistica esterna)
+5. Salva
+
+I dati vengono aggiornati automaticamente una volta al giorno.  
+Enel fornisce i dati con **circa 3 giorni di ritardo**, quindi non aspettarti valori in tempo reale.
 
 ![Description of Image](assets/energy_config.jpg)
 
@@ -74,11 +95,14 @@ if all goes well, you should see something like this:
 
 - 📖 [Enel Portal](https://www.enel.it/)
 - 📘 [Home Assistant Docs](https://www.home-assistant.io/integrations/)
+- 🔧 [Repository originale](https://github.com/sathia-musso/enelgrid)
 
-## 🧑‍💻 Developer
+## 🧑‍💻 Credits
 
-This integration was developed by [Sathia Francesco Musso](https://github.com/sathia-musso/enelgrid/).  
-Contributions and feedback are welcome!
+- Integrazione originale di [Sathia Francesco Musso](https://github.com/sathia-musso/enelgrid/)
+- Fork con correzioni di [@newton21890](https://github.com/newton21890/enelgrid)
+- Contributi da [@shatteringlass](https://github.com/shatteringlass/enelgrid) (refactoring parser + offset handling)
+- Contributi da [@LukeRPi](https://github.com/LukeRPi/enelgrid) (fix statistiche mensili)
 
 ---
 

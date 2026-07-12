@@ -38,6 +38,13 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.config_entries.async_update_entry(entry, version=4)
         _LOGGER.warning("[EnelGrid Migration] Migration to version 4 complete")
 
+    if entry.version == 4:
+        # Version 4 -> 5: Fix unique_id and async_import_statistics
+        # No data changes needed, just re-fetch to use new API
+        await _migrate_v4_to_v5(hass, entry)
+        hass.config_entries.async_update_entry(entry, version=5)
+        _LOGGER.warning("[EnelGrid Migration] Migration to version 5 complete")
+
     return True
 
 
@@ -54,6 +61,11 @@ async def _migrate_v2_to_v3(hass: HomeAssistant, entry: ConfigEntry):
 async def _migrate_v3_to_v4(hass: HomeAssistant, entry: ConfigEntry):
     """Fix race condition bug - clear incomplete statistics and re-fetch."""
     await _clear_statistics_and_mark_fetch(hass, entry, "v3→v4")
+
+
+async def _migrate_v4_to_v5(hass: HomeAssistant, entry: ConfigEntry):
+    """Trigger re-fetch to populate statistics with updated API (unique_id, mean_type)."""
+    await _clear_statistics_and_mark_fetch(hass, entry, "v4→v5")
 
 
 async def _clear_statistics_and_mark_fetch(hass: HomeAssistant, entry: ConfigEntry, migration_name: str):
