@@ -12,11 +12,12 @@ from datetime import datetime, timedelta
 from homeassistant.components.persistent_notification import async_create
 from homeassistant.components.recorder import get_instance
 from homeassistant.components.recorder.statistics import (
-    async_import_statistics,
+    async_add_external_statistics,
     clear_statistics,
     get_last_statistics,
     statistics_during_period,
 )
+from homeassistant.components.recorder.models import StatisticMeanType
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.event import async_track_time_interval
@@ -74,6 +75,7 @@ def _statistic_metadata(pod: str, statistic_id: str, name: str, unit: str) -> di
     return {
         "has_mean": False,
         "has_sum": True,
+        "mean_type": StatisticMeanType.NONE,
         "name": name,
         "source": "sensor",
         "statistic_id": statistic_id,
@@ -303,8 +305,8 @@ class EnelGridConsumptionSensor(SensorEntity):
         )
 
         try:
-            await async_import_statistics(self.hass, metadata_kw, stats_kw, mean_type="sum")
-            await async_import_statistics(self.hass, metadata_cost, stats_cost, mean_type="sum")
+            async_add_external_statistics(self.hass, metadata_kw, stats_kw)
+            async_add_external_statistics(self.hass, metadata_cost, stats_cost)
             _LOGGER.debug(
                 "[EnelGrid] Saved %d points — final sum: %.2f kWh",
                 len(stats_kw), final_cumulative,
