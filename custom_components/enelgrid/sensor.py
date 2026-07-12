@@ -70,7 +70,7 @@ def _statistic_ids(pod: str) -> tuple[str, str]:
     return f"{base}_consumption", f"{base}_kw_cost"
 
 
-def _statistic_metadata(pod: str, statistic_id: str, name: str, unit: str) -> dict:
+def _statistic_metadata(pod: str, statistic_id: str, name: str, unit: str, unit_class: str | None = None) -> dict:
     """Return a recorder statistics metadata dict."""
     return {
         "has_mean": False,
@@ -80,6 +80,7 @@ def _statistic_metadata(pod: str, statistic_id: str, name: str, unit: str) -> di
         "source": "sensor",
         "statistic_id": statistic_id,
         "unit_of_measurement": unit,
+        "unit_class": unit_class,
     }
 
 
@@ -289,7 +290,7 @@ class EnelGridConsumptionSensor(SensorEntity):
             The final cumulative kWh after all points are saved.
         """
         stat_consumption, stat_cost = _statistic_ids(pod)
-        metadata_kw = _statistic_metadata(pod, stat_consumption, f"Enel {pod} Consumption", "kWh")
+        metadata_kw = _statistic_metadata(pod, stat_consumption, f"Enel {pod} Consumption", "kWh", unit_class="energy")
         metadata_cost = _statistic_metadata(pod, stat_cost, f"Enel {pod} Cost", "EUR")
 
         flat_points = flatten_sorted(data_by_date)
