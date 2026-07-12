@@ -67,8 +67,9 @@ def _normalize_pod(pod: str) -> str:
 def _statistic_ids(pod: str) -> tuple[str, str]:
     """Return ``(consumption_id, cost_id)`` statistic IDs for *pod*.
     
-    Consumption ID matches the sensor entity_id so the energy dashboard
-    finds both the entity and its hourly statistics together.
+    The consumption ID is separate from the monthly sensor entity_id.
+    It appears in the Energy Dashboard entity picker as a statistic-only
+    entry (no corresponding sensor entity) named "Enel {POD} Consumption".
     """
     base = f"sensor:enelgrid_{_normalize_pod(pod)}"
     return f"{base}_consumption", f"{base}_kw_cost"
@@ -392,19 +393,19 @@ class EnelGridConsumptionSensor(SensorEntity):
 
 
 class EnelGridMonthlySensor(SensorEntity):
-    """Shows cumulative consumption for the current period.
-    Hourly statistics are imported under the same entity_id so the
-    Energy Dashboard can use both the hourly data and the state value.
+    """Exposes the current-month cumulative consumption total.
+    Hourly statistics are imported under a separate statistic ID
+    (sensor:enelgrid_{pod}_consumption) for the Energy Dashboard.
     """
 
     def __init__(self, pod: str) -> None:
-        object_id = f"enelgrid_{_normalize_pod(pod)}_consumption"
+        object_id = f"enelgrid_{_normalize_pod(pod)}_monthly_consumption"
         self.entity_id = f"sensor.{object_id}"
-        self._attr_name = f"Enel {pod} Consumption"
+        self._attr_name = f"Enel {pod} Monthly Consumption"
         self._attr_device_class = SensorDeviceClass.ENERGY
         self._attr_state_class = "total_increasing"
         self._attr_native_unit_of_measurement = "kWh"
-        self._attr_unique_id = f"{_normalize_pod(pod)}_consumption"
+        self._attr_unique_id = f"{_normalize_pod(pod)}_monthly_consumption"
         self._attr_extra_state_attributes = {"source": "enelgrid"}
         self._state: float = 0.0
 
