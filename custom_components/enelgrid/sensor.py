@@ -65,9 +65,13 @@ def _normalize_pod(pod: str) -> str:
 
 
 def _statistic_ids(pod: str) -> tuple[str, str]:
-    """Return ``(consumption_id, cost_id)`` statistic IDs for *pod*."""
+    """Return ``(consumption_id, cost_id)`` statistic IDs for *pod*.
+    
+    Consumption ID matches the monthly sensor entity_id so the energy
+    dashboard can find both the entity and its hourly statistics.
+    """
     base = f"sensor:enelgrid_{_normalize_pod(pod)}"
-    return f"{base}_consumption", f"{base}_kw_cost"
+    return f"{base}_monthly_consumption", f"{base}_kw_cost"
 
 
 def _statistic_metadata(pod: str, statistic_id: str, name: str, unit: str, unit_class: str | None = None) -> dict:
